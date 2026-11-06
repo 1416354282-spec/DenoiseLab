@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>DenoiseLab 封面</title>
+<style>
+  :root {
+    --bg:#0b1220; --surface:#111a2c; --border:#22304a; --fg:#e6edf7;
+    --muted:#8fa3bf; --accent:#38bdf8; --green:#34d399; --amber:#fbbf24; --rose:#fb7185; --violet:#a78bfa;
+    --mono:"Cascadia Code",Consolas,monospace;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;width:1280px;height:640px;overflow:hidden}
+  body{
+    background:
+      radial-gradient(900px 480px at 8% 0%, rgba(56,189,248,.18), transparent 62%),
+      radial-gradient(700px 420px at 96% 100%, rgba(167,139,250,.12), transparent 60%),
+      #0b1220;
+    color:var(--fg); font-family:"Segoe UI","PingFang SC","Microsoft YaHei",system-ui,sans-serif;
+  }
+  .wrap{position:relative;width:1280px;height:640px;padding:64px 72px;display:flex;gap:40px;align-items:center}
+  .grid{position:absolute;inset:0;background-image:linear-gradient(rgba(56,189,248,.05) 1px,transparent 1px),linear-gradient(90deg,rgba(56,189,248,.05) 1px,transparent 1px);background-size:48px 48px;mask-image:linear-gradient(180deg,rgba(0,0,0,.7),transparent 78%)}
+  .left{position:relative;width:600px;flex:0 0 600px}
+  .brand{display:flex;align-items:center;gap:12px;color:var(--accent);font-size:13px;letter-spacing:.22em;font-weight:600}
+  .brand svg{width:34px;height:34px}
+  h1{margin:22px 0 0;font-size:62px;line-height:1.12;letter-spacing:-.01em}
+  h1 span{color:var(--accent)}
+  .sub{margin:18px 0 0;font-size:18px;line-height:1.7;color:#c7d5e8;max-width:590px}
+  .sub b{color:var(--fg);font-weight:600}
+  .chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:26px}
+  .chip{font-size:11.5px;color:var(--muted);border:1px solid var(--border);border-radius:999px;padding:6px 12px;background:rgba(11,18,32,.6)}
+  .chip.on{color:var(--accent);border-color:rgba(56,189,248,.5)}
+  .right{position:relative;flex:1;height:100%;display:flex;align-items:center}
+  .panel{
+    width:100%;background:linear-gradient(180deg,#121d32,#0e1626);
+    border:1px solid var(--border);border-radius:22px;padding:22px 22px 18px;
+    box-shadow:0 24px 80px rgba(0,0,0,.45);
+  }
+  .panel .head{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
+  .panel .head span:first-child{font-size:12px;color:var(--muted);letter-spacing:.06em}
+  .panel .head span:last-child{font-size:10.5px;color:var(--accent);border:1px solid rgba(56,189,248,.4);border-radius:999px;padding:3px 9px}
+  .metrics{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:12px}
+  .m{background:rgba(11,18,32,.8);border:1px solid var(--border);border-radius:11px;padding:9px 11px}
+  .m .k{font-size:10px;color:var(--muted);letter-spacing:.05em}
+  .m .v{font-family:var(--mono);font-size:15px;margin-top:3px}
+  .m .v small{font-size:10px;color:var(--muted)}
+  .gloss{font-size:10px;color:#8fa3bf;margin-top:9px;letter-spacing:.02em}
+  .foot{position:absolute;left:72px;bottom:34px;font-size:11px;color:var(--muted);letter-spacing:.04em}
+  .dot{color:#3b567f}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="grid"></div>
+  <div class="left">
+    <div class="brand">
+      <svg viewBox="0 0 32 32" fill="none"><path d="M2 17h5l3-10 4.5 18L19 12l3 7h8" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      DENOISELAB
+    </div>
+    <h1>脑电去噪<br><span>对比与选型助手</span></h1>
+    <p class="sub">同一段脑电，五种去噪方法。<br><b>谁去掉了伪迹，谁把信号也一起删了？</b></p>
+    <div class="chips">
+      <span class="chip on">16 导 · 250 Hz</span>
+      <span class="chip">5 种方法</span>
+      <span class="chip">7 个指标</span>
+      <span class="chip">2 套数据源</span>
+      <span class="chip">MNE 脚本导出</span>
+    </div>
+  </div>
+  <div class="right">
+    <div class="panel">
+      <div class="head"><span>真实背景 · 眼电 · −5 dB</span><span>对比示意</span></div>
+      <svg width="100%" height="250" viewBox="0 0 500 250" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <linearGradient id="fade" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#38bdf8" stop-opacity=".12"/>
+            <stop offset="1" stop-color="#38bdf8" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        <rect x="6" y="8" width="488" height="200" rx="10" fill="#0a111e" stroke="#22304a"/>
+        <g stroke="#22304a" stroke-opacity=".5">
+          <line x1="18" y1="58" x2="482" y2="58"/><line x1="18" y1="108" x2="482" y2="108"/>
+          <line x1="18" y1="158" x2="482" y2="158"/>
+        </g>
+        <!-- noisy -->
+        <path d="M18 108 C 40 78, 55 132, 78 104 S 110 70, 132 112 S 162 140, 188 96 S 220 70, 246 118 S 276 150, 304 92 S 336 66, 362 112 S 392 146, 418 96 S 450 72, 482 108"
+              fill="none" stroke="#64748b" stroke-width="1.6" opacity=".9"/>
+        <!-- bandpass -->
+        <path d="M18 110 C 38 92, 54 120, 76 108 S 108 88, 130 114 S 160 128, 186 104 S 218 88, 244 116 S 274 136, 302 100 S 334 86, 360 114 S 390 132, 416 104 S 448 90, 482 108"
+              fill="none" stroke="#38bdf8" stroke-width="2"/>
+        <!-- ICA -->
+        <path d="M18 112 C 36 96, 52 120, 74 106 S 106 92, 128 110 S 158 126, 184 104 S 216 92, 242 112 S 272 130, 300 102 S 332 90, 358 112 S 388 128, 414 104 S 446 94, 482 108"
+              fill="none" stroke="#34d399" stroke-width="2"/>
+        <!-- clean dashed -->
+        <path d="M18 114 C 40 100, 54 118, 78 110 S 112 98, 134 112 S 164 122, 190 108 S 222 98, 246 112 S 278 124, 306 106 S 338 96, 364 112 S 394 122, 418 108 S 450 100, 482 108"
+              fill="none" stroke="#e2e8f0" stroke-width="1.4" stroke-dasharray="5 4" opacity=".75"/>
+        <!-- N400 search window -->
+        <rect x="246" y="8" width="66" height="200" fill="#fb7185" fill-opacity=".055"/>
+        <line x1="246" y1="8" x2="246" y2="208" stroke="#fb7185" stroke-opacity=".35" stroke-dasharray="3 3"/>
+        <line x1="312" y1="8" x2="312" y2="208" stroke="#fb7185" stroke-opacity=".35" stroke-dasharray="3 3"/>
+        <text x="279" y="224" fill="#fb7185" font-size="10.5" text-anchor="middle">N400 搜索窗</text>
+        <text x="18" y="232" fill="#8fa3bf" font-size="10.5">6 s</text>
+        <text x="482" y="232" fill="#8fa3bf" font-size="10.5" text-anchor="end">10 s</text>
+      </svg>
+      <div class="gloss">曲线为示意，四项指标为真实计算结果</div>
+      <div class="metrics">
+        <div class="m"><div class="k">ICA · SNR 提升</div><div class="v">+8.8 <small>dB</small></div></div>
+        <div class="m"><div class="k">ICA · N400 峰值</div><div class="v">56<small>%</small></div></div>
+        <div class="m"><div class="k">带通 · 波形相关</div><div class="v">0.73</div></div>
+        <div class="m"><div class="k">带通 · N400 峰值</div><div class="v">118<small>%</small></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">离线真实计算 <span class="dot">·</span> 无上传 <span class="dot">·</span> 无在线推理 <span class="dot">·</span> 可复现</div>
+</div>
+</body>
+</html>

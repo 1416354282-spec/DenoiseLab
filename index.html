@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DenoiseLab · 脑电去噪对比与选型助手</title>
+<meta name="description" content="同一段脑电，五种去噪方法同台对比：波形、频谱、ERP 与下游影响一目了然，并给出可复现的选型方案与 MNE 脚本。">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%230b1220'/%3E%3Cpath d='M3 17h5l3-9 4 16 4-13 3 6h7' stroke='%2338bdf8' stroke-width='2.4' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand">
+    <svg viewBox="0 0 32 32" class="logo" aria-hidden="true"><path d="M3 17h5l3-9 4 16 4-13 3 6h7" stroke="currentColor" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <div>
+      <h1>DenoiseLab</h1>
+      <p>脑电去噪对比与选型助手</p>
+    </div>
+  </div>
+  <span class="badge" id="header-badge" title="所有曲线与指标均由 Python 离线真实计算">合成 EEG · 离线真实计算</span>
+</header>
+
+<main>
+  <section class="intro">
+    <p class="lede">同一段脑电，五种去噪方法，<strong>谁去掉了伪迹，谁把信号也一起删了？</strong>选择数据源、伪迹与信噪比，直接对比波形、频谱、ERP 和下游指标，再导出可复现的处理方案。</p>
+  </section>
+
+  <section class="panel controls" aria-label="场景控制">
+    <div class="dataset-block">
+      <div class="dataset-head">
+        <span class="control-label" id="label-dataset">数据源 <span class="hint">切换后全部图表、指标与推荐随之重算</span></span>
+        <span class="dataset-badge" id="dataset-badge">已知真值 · 可复现</span>
+      </div>
+      <div class="dataset-options" role="radiogroup" aria-labelledby="label-dataset" id="dataset-options">
+        <button class="dataset-card active" role="radio" aria-checked="true" data-value="synthetic">
+          <span class="dataset-title">合成 EEG</span>
+          <span class="dataset-tag">教学基准 · 已知真值</span>
+          <span class="dataset-desc">α/β/θ 节律 + 1/f 背景 + 20 次 N400/P100，伪迹按设定 SNR 注入，逐点真值可计算。</span>
+        </button>
+        <button class="dataset-card" role="radio" aria-checked="false" data-value="real">
+          <span class="dataset-title">真实背景 EEG</span>
+          <span class="dataset-tag">PhysioNet EEGBCI · ODC-BY 1.0</span>
+          <span class="dataset-desc">S001R02 眼闭静息，真实的 1/f 背景与 α 峰；伪迹和 ERP 仍为注入，真值是构造的。</span>
+        </button>
+      </div>
+      <p class="dataset-note" id="dataset-note"></p>
+    </div>
+    <div class="control-group">
+      <span class="control-label" id="label-artifact">伪迹类型</span>
+      <div class="segmented" role="group" aria-labelledby="label-artifact" id="artifact-group">
+        <button data-value="eog" class="active">眼电 EOG</button>
+        <button data-value="emg">肌电 EMG</button>
+        <button data-value="line">工频 50Hz</button>
+        <button data-value="drift">漂移 Drift</button>
+      </div>
+    </div>
+    <div class="control-group">
+      <span class="control-label" id="label-snr">注入信噪比</span>
+      <div class="segmented" role="group" aria-labelledby="label-snr" id="snr-group">
+        <button data-value="-5" class="active">-5 dB（重污染）</button>
+        <button data-value="0">0 dB</button>
+        <button data-value="5">+5 dB（轻污染）</button>
+      </div>
+    </div>
+    <div class="control-group methods-group">
+      <span class="control-label" id="label-methods">对比方法（点选）</span>
+      <div class="chips" role="group" aria-labelledby="label-methods" id="method-chips"></div>
+    </div>
+  </section>
+
+  <div class="status-line" id="status-line" role="status"></div>
+
+  <section class="grid">
+    <article class="card span-2">
+      <div class="card-head">
+        <h2>波形对比 <span class="hint" id="wave-hint">4 秒窗口 · µV（合成单位）</span></h2>
+        <div class="segmented small" id="channel-group" role="group" aria-label="显示通道">
+          <button data-value="Fp1">Fp1</button>
+          <button data-value="Cz" class="active">Cz</button>
+          <button data-value="Oz">Oz</button>
+        </div>
+      </div>
+      <canvas id="wave-canvas" height="260" aria-label="波形对比图"></canvas>
+      <div class="legend" id="wave-legend"></div>
+    </article>
+
+    <article class="card">
+      <div class="card-head"><h2>频谱 <span class="hint">Cz · Welch</span></h2></div>
+      <canvas id="psd-canvas" height="220" aria-label="功率谱对比图"></canvas>
+    </article>
+
+    <article class="card">
+      <div class="card-head"><h2>ERP <span class="hint">Cz · 20 次平均 · 阴影为 N400 搜索窗</span></h2></div>
+      <canvas id="erp-canvas" height="220" aria-label="ERP 对比图"></canvas>
+    </article>
+
+    <article class="card span-2">
+      <div class="card-head"><h2>下游影响 <span class="hint" id="metrics-hint">与干净真值对比，越接近理想值越好</span></h2></div>
+      <div class="table-wrap">
+        <table id="metrics-table">
+          <thead><tr>
+            <th>方法</th><th>SNR 提升 (dB)<span class="ideal">越高越好</span></th>
+            <th>波形相关<span class="ideal">→1</span></th><th>RRMSE<span class="ideal">→0</span></th>
+            <th>α 功率保留<span class="ideal">→1</span></th><th>β 功率保留<span class="ideal">→1</span></th>
+            <th>ERP 峰值比<span class="ideal">→1</span></th><th>N400 潜伏期偏移<span class="ideal">→0 ms</span></th>
+          </tr></thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </article>
+
+    <article class="card conclusion span-2" id="conclusion-card">
+      <div class="card-head"><h2>本场景结论</h2></div>
+      <div id="conclusion-body"></div>
+    </article>
+  </section>
+
+  <section class="panel recommender" id="recommender">
+    <div class="card-head"><h2>选型推荐器 <span class="hint">按你的数据条件给出方案、脚本与 Methods 草稿</span></h2></div>
+    <div class="rec-controls">
+      <label>通道数
+        <select id="rec-channels"><option>8</option><option selected>16</option><option>32</option><option>64</option></select>
+      </label>
+      <label>采样率
+        <select id="rec-sfreq"><option selected>250</option><option>500</option><option>1000</option></select>
+      </label>
+      <label>主要伪迹
+        <select id="rec-artifact">
+          <option value="eog">眼电</option><option value="emg">肌电</option>
+          <option value="line">工频</option><option value="drift">漂移</option><option value="mixed">混合/不确定</option>
+        </select>
+      </label>
+      <label>需要保留 ERP
+        <select id="rec-erp"><option value="yes" selected>是（ERP/语义实验）</option><option value="no">否（静息态/节律分析）</option></select>
+      </label>
+    </div>
+    <div class="rec-output">
+      <div id="rec-text"></div>
+      <div class="rec-actions">
+        <button class="btn primary" id="btn-script">生成 MNE 脚本</button>
+        <button class="btn" id="btn-methods">生成 Methods 段落</button>
+        <button class="btn" id="btn-report">导出当前对比报告</button>
+      </div>
+      <pre id="rec-code" class="code" hidden></pre>
+      <div class="code-actions" id="code-actions" hidden>
+        <button class="btn small" id="btn-copy">复制</button>
+        <button class="btn small" id="btn-download">下载</button>
+      </div>
+    </div>
+  </section>
+
+  <section class="panel notes">
+    <div class="card-head"><h2>方法论与边界</h2></div>
+    <div class="notes-grid">
+      <div><h3>两个数据源</h3><p><strong>合成 EEG</strong>：16 导、250 Hz、40 秒，节律与 1/f 背景由参数生成。<strong>真实背景</strong>：PhysioNet EEGBCI S001R02 眼闭静息，0.5 Hz 高通与逐通道归一化后使用（160→250 Hz）。两套数据的伪迹与 ERP 都是注入的，真值均为构造真值，指标只在此前提下成立。</p></div>
+      <div><h3>算法是真的</h3><p>带通/陷波（scipy IIR）、小波软阈值（PyWavelets db4）、ICA（FastICA + 按伪迹类型启发式剔除成分）、ASR 为<strong>简化实现</strong>（低活动段校准 + 子空间衰减）。所有指标与构造真值对比。</p></div>
+      <div><h3>不能外推</h3><p>真实背景只解决「背景像不像真 EEG」，不代表真实伪迹、真实 ERP 或真实被试上的排名。真实数据请用本页导出的脚本重新验证，尤其要检查 ERP 与下游任务是否受损。</p></div>
+      <div><h3>如何复现</h3><p>合成基准由 <code>tools/generate_benchmark.py</code> 生成；真实背景由 <code>tools/generate_real_benchmark.py</code> 从 <code>tools/raw/S001R02.edf</code>（ODC-BY 1.0）生成。网页只读取离线 JSON，无在线推理、无数据上传。深度去噪（如 GCTNet）需本地模型，未纳入本基准。</p></div>
+    </div>
+  </section>
+</main>
+
+<footer>DenoiseLab · 用 Qoder 构建 · 基准可复现 · 仅用于科研学习与教学</footer>
+<script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<title>DenoiseLab 设计图</title>
+<style>
+  :root {
+    --bg: #0b1220;
+    --surface: #111a2c;
+    --surface2: #16223a;
+    --border: #22304a;
+    --fg: #e6edf7;
+    --muted: #8fa3bf;
+    --accent: #38bdf8;
+    --green: #34d399;
+    --amber: #fbbf24;
+    --violet: #a78bfa;
+    --rose: #fb7185;
+    --mono: "Cascadia Code", Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 24px;
+    background: var(--bg); color: var(--fg);
+    font-family: "Segoe UI", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+  .fig {
+    width: 720px; margin: 0 auto 28px;
+    padding: 38px 40px 34px;
+    background:
+      radial-gradient(900px 320px at 12% -10%, rgba(56,189,248,.14), transparent 60%),
+      linear-gradient(180deg, #121c30, #0f1728);
+    border: 1px solid var(--border);
+    border-radius: 24px;
+  }
+  .kicker {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 12px; letter-spacing: .16em; color: var(--accent);
+    text-transform: uppercase; font-weight: 600;
+  }
+  .kicker::before { content: ""; width: 22px; height: 2px; background: var(--accent); border-radius: 2px; }
+  h2 { margin: 12px 0 8px; font-size: 27px; line-height: 1.3; letter-spacing: .01em; }
+  .sub { margin: 0 0 24px; color: var(--muted); font-size: 14px; line-height: 1.65; }
+  .accent { color: var(--accent); }
+  .amber { color: var(--amber); }
+  .green { color: var(--green); }
+  .rose { color: var(--rose); }
+  .mono { font-family: var(--mono); }
+  .foot {
+    margin-top: 22px; padding-top: 14px; border-top: 1px dashed var(--border);
+    color: var(--muted); font-size: 11.5px; line-height: 1.6;
+  }
+
+  /* 01 */
+  .hero {
+    font-size: 19px; line-height: 1.6; color: var(--fg);
+    padding: 18px 20px; margin: 6px 0 24px;
+    background: rgba(56,189,248,.07); border-left: 3px solid var(--accent);
+    border-radius: 0 12px 12px 0;
+  }
+  .hero strong { color: var(--accent); }
+  .cards3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .mini {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 14px; padding: 14px 15px;
+  }
+  .mini .tag { font-size: 11px; color: var(--muted); letter-spacing: .08em; }
+  .mini .val { margin-top: 6px; font-size: 13.5px; line-height: 1.55; }
+  .strip {
+    margin-top: 16px; display: flex; gap: 8px; flex-wrap: wrap;
+  }
+  .pill {
+    font-size: 11.5px; color: var(--muted);
+    border: 1px solid var(--border); border-radius: 999px; padding: 4px 11px;
+  }
+  .pill.on { color: var(--accent); border-color: rgba(56,189,248,.5); }
+
+  /* 02 */
+  .chart-wrap { margin-top: 4px; }
+  .legend-row { display: flex; gap: 18px; flex-wrap: wrap; margin-top: 8px; font-size: 11.5px; color: var(--muted); }
+  .legend-row i { display: inline-block; width: 9px; height: 9px; border-radius: 50%; margin-right: 6px; }
+  .note {
+    margin-top: 14px; padding: 11px 14px; border-radius: 10px;
+    background: rgba(251,113,133,.08); border: 1px solid rgba(251,113,133,.28);
+    font-size: 12.5px; line-height: 1.6; color: #ffc2ca;
+  }
+
+  /* 03 */
+  .cards2 { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .ds {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 16px; padding: 16px 17px;
+  }
+  .ds.real { border-color: rgba(56,189,248,.55); background: rgba(56,189,248,.06); }
+  .ds h3 { margin: 0; font-size: 16px; }
+  .ds .badge { display: inline-block; margin-top: 6px; font-size: 10.5px; letter-spacing: .06em; color: var(--accent); border: 1px solid rgba(56,189,248,.4); border-radius: 999px; padding: 2px 8px; }
+  .ds ul { margin: 12px 0 0; padding: 0; list-style: none; display: grid; gap: 7px; }
+  .ds li { font-size: 12px; color: var(--muted); line-height: 1.5; padding-left: 14px; position: relative; }
+  .ds li::before { content: ""; position: absolute; left: 0; top: 7px; width: 5px; height: 5px; border-radius: 50%; background: var(--accent); opacity: .7; }
+  .truthline {
+    margin-top: 16px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
+    font-size: 10.5px; color: var(--muted);
+  }
+  .truthline span { border: 1px solid var(--border); background: var(--bg); border-radius: 7px; padding: 5px 7px; }
+  .truthline b { color: var(--accent); font-weight: 500; }
+  .arrow { color: #4a628a; }
+
+  /* 04 */
+  .flow { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr 1fr; gap: 9px; align-items: stretch; margin-top: 6px; }
+  .step {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 13px;
+    padding: 12px 11px; position: relative;
+  }
+  .step .no { font-family: var(--mono); font-size: 10px; color: var(--accent); letter-spacing: .08em; }
+  .step .t { margin-top: 6px; font-size: 12.5px; line-height: 1.45; }
+  .step .d { margin-top: 5px; font-size: 10.5px; color: var(--muted); line-height: 1.45; }
+  .out {
+    margin-top: 16px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 9px;
+  }
+  .out div {
+    border: 1px dashed rgba(56,189,248,.45); border-radius: 10px;
+    padding: 10px 12px; font-size: 12px; color: var(--accent); text-align: center;
+  }
+
+  /* 05 */
+  .groups { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .group { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 14px 15px; }
+  .group h3 { margin: 0 0 10px; font-size: 12px; letter-spacing: .06em; color: var(--muted); font-weight: 500; }
+  .metric { display: flex; justify-content: space-between; gap: 8px; padding: 6px 0; border-bottom: 1px solid rgba(34,48,74,.6); font-size: 12px; }
+  .metric:last-child { border-bottom: 0; }
+  .metric .goal { color: var(--accent); font-family: var(--mono); font-size: 10.5px; white-space: nowrap; }
+  .weight {
+    margin-top: 14px; background: var(--bg); border: 1px solid var(--border);
+    border-radius: 10px; padding: 11px 13px; font-size: 11.5px; color: var(--muted); line-height: 1.7;
+  }
+  .weight b { color: var(--fg); font-weight: 500; }
+
+  /* 06 */
+  .rows { display: grid; gap: 8px; margin-top: 4px; }
+  .row {
+    display: grid; grid-template-columns: 30px 104px 1fr; gap: 10px; align-items: start;
+    background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+    padding: 10px 12px;
+  }
+  .row .n { font-family: var(--mono); font-size: 11px; color: var(--accent); padding-top: 2px; }
+  .row .stage { font-size: 12.5px; color: var(--fg); padding-top: 1px; }
+  .row .body { font-size: 11px; line-height: 1.55; color: var(--muted); }
+  .q { color: var(--accent); }
+  .me { color: var(--amber); }
+  .row .body div + div { margin-top: 3px; }
+
+  /* 07 */
+  .bound { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+  .bound .col { border-radius: 14px; padding: 14px 15px; border: 1px solid var(--border); background: var(--surface); }
+  .bound .col.can { border-color: rgba(52,211,153,.35); }
+  .bound .col.cannot { border-color: rgba(251,113,133,.35); }
+  .bound .col.how { border-color: rgba(56,189,248,.4); }
+  .bound h3 { margin: 0 0 8px; font-size: 12px; letter-spacing: .05em; }
+  .bound .can h3 { color: var(--green); }
+  .bound .cannot h3 { color: var(--rose); }
+  .bound .how h3 { color: var(--accent); }
+  .bound p { margin: 0; font-size: 11.5px; color: var(--muted); line-height: 1.65; }
+</style>
+</head>
+<body>
+
+<!-- 01 定位 -->
+<section class="fig" id="fig1">
+  <div class="kicker">DenoiseLab · 01 定位</div>
+  <h2>同一段脑电，五种去噪方法</h2>
+  <p class="sub">先把问题摆到同一张桌子上，再谈选哪个。</p>
+  <div class="hero">谁去掉了伪迹，<strong>谁把信号也一起删了？</strong></div>
+  <div class="cards3">
+    <div class="mini"><div class="tag">谁在用</div><div class="val">EEG / ERP 学生与研究者</div></div>
+    <div class="mini"><div class="tag">什么场景</div><div class="val">选去噪方法、复现实验、写 Methods</div></div>
+    <div class="mini"><div class="tag">拿到什么</div><div class="val">对比结论 + MNE 脚本 + Methods 草稿</div></div>
+  </div>
+  <div class="strip">
+    <span class="pill on">无需注册</span>
+    <span class="pill on">无需上传</span>
+    <span class="pill on">打开即用</span>
+    <span class="pill">全部指标离线真实计算</span>
+  </div>
+</section>
+
+<!-- 02 核心矛盾 -->
+<section class="fig" id="fig2">
+  <div class="kicker">DenoiseLab · 02 核心矛盾</div>
+  <h2>SNR 最高的方法，未必是能用的方法</h2>
+  <p class="sub">真实背景 · 眼电伪迹 · 注入 SNR −5 dB。每个点来自本工具的实际计算结果。</p>
+  <div class="chart-wrap">
+    <svg width="640" height="342" viewBox="0 0 640 342" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="SNR 提升与 N400 峰值保留的关系">
+      <defs>
+        <linearGradient id="plotbg" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0" stop-color="#0c1424"/>
+          <stop offset="1" stop-color="#0a111e"/>
+        </linearGradient>
+      </defs>
+      <rect x="58" y="16" width="562" height="276" rx="10" fill="url(#plotbg)" stroke="#22304a"/>
+      <!-- grid -->
+      <g stroke="#22304a" stroke-opacity=".55">
+        <line x1="58" y1="16" x2="620" y2="16"/>
+        <line x1="58" y1="85" x2="620" y2="85"/>
+        <line x1="58" y1="154" x2="620" y2="154"/>
+        <line x1="58" y1="223" x2="620" y2="223"/>
+        <line x1="58" y1="292" x2="620" y2="292"/>
+      </g>
+      <!-- 70% warning line: y = 16 + (130-70)/90*276 = 200 -->
+      <line x1="58" y1="200" x2="620" y2="200" stroke="#fb7185" stroke-opacity=".55" stroke-dasharray="5 5"/>
+      <text x="612" y="194" fill="#fb7185" font-size="10" text-anchor="end">ERP 70% 警戒线</text>
+      <!-- low-erp zone -->
+      <rect x="430" y="200" width="190" height="92" fill="#fb7185" fill-opacity=".06"/>
+      <!-- points -->
+      <!-- bandpass (2.17,118) -> x=58+(4.17/12)*562=253 ; y=16+(12/90)*276=53 -->
+      <circle cx="253" cy="53" r="7" fill="#38bdf8"/>
+      <text x="266" y="49" fill="#e6edf7" font-size="12">带通 / 陷波</text>
+      <!-- wavelet (-0.05,81) -> x=149 ; y=16+(49/90)*276=166 -->
+      <circle cx="149" cy="166" r="7" fill="#fbbf24"/>
+      <text x="162" y="162" fill="#e6edf7" font-size="12">小波</text>
+      <!-- asr (5.69,89) -> x=418 ; y=16+(41/90)*276=142 -->
+      <circle cx="418" cy="142" r="7" fill="#fb7185"/>
+      <text x="431" y="138" fill="#e6edf7" font-size="12">ASR（简化）</text>
+      <!-- ica (8.81,56) -> x=564 ; y=16+(74/90)*276=243 -->
+      <circle cx="564" cy="243" r="7.5" fill="#34d399"/>
+      <text x="552" y="264" fill="#e6edf7" font-size="12" text-anchor="end">ICA</text>
+      <!-- axes -->
+      <line x1="58" y1="292" x2="620" y2="292" stroke="#5d7398"/>
+      <line x1="58" y1="16" x2="58" y2="292" stroke="#5d7398"/>
+      <!-- x ticks -->
+      <g fill="#8fa3bf" font-size="10" text-anchor="middle">
+        <text x="58" y="308">−2</text>
+        <text x="152" y="308">0</text>
+        <text x="246" y="308">2</text>
+        <text x="340" y="308">4</text>
+        <text x="433" y="308">6</text>
+        <text x="527" y="308">8</text>
+        <text x="620" y="308">10</text>
+      </g>
+      <!-- y ticks -->
+      <g fill="#8fa3bf" font-size="10" text-anchor="end">
+        <text x="50" y="297">40</text>
+        <text x="50" y="228">60</text>
+        <text x="50" y="159">80</text>
+        <text x="50" y="90">100</text>
+        <text x="50" y="21">120</text>
+      </g>
+      <text x="339" y="334" fill="#8fa3bf" font-size="11" text-anchor="middle">SNR 提升（dB）</text>
+      <text x="18" y="154" fill="#8fa3bf" font-size="11" text-anchor="middle" transform="rotate(-90 18 154)">N400 峰值保留（%）</text>
+    </svg>
+  </div>
+  <div class="legend-row">
+    <span><i style="background:#38bdf8"></i>带通 / 陷波</span>
+    <span><i style="background:#fbbf24"></i>小波</span>
+    <span><i style="background:#fb7185"></i>ASR</span>
+    <span><i style="background:#34d399"></i>ICA</span>
+  </div>
+  <div class="note">ICA 把 SNR 拉到 +8.8 dB，但 N400 峰值只剩 56%；带通的峰值比是 118%，波形相关却只有 0.73——伪迹仍在。没有免费午餐，只有代价组合。</div>
+  <div class="foot">纵轴 100% = 与构造真值一致。真实背景来自 PhysioNet EEGBCI S001R02（ODC-BY 1.0），伪迹与 ERP 为注入。</div>
+</section>
+
+<!-- 03 数据源 -->
+<section class="fig" id="fig3">
+  <div class="kicker">DenoiseLab · 03 数据源设计</div>
+  <h2>两套数据，只换背景这一个变量</h2>
+  <p class="sub">算法、指标、导出完全相同；换数据源，才能看出结论是不是只在合成数据上成立。</p>
+  <div class="cards2">
+    <div class="ds">
+      <h3>合成 EEG</h3>
+      <span class="badge">已知真值 · 可复现</span>
+      <ul>
+        <li>16 导 · 250 Hz · 40 s</li>
+        <li>α/β/θ 节律 + 1/f 背景 + 20 次 N400/P100</li>
+        <li>四类伪迹按 −5 / 0 / +5 dB 注入</li>
+        <li>固定随机种子，逐点真值可计算</li>
+      </ul>
+    </div>
+    <div class="ds real">
+      <h3>真实背景 EEG</h3>
+      <span class="badge">PhysioNet EEGBCI · ODC-BY 1.0</span>
+      <ul>
+        <li>S001R02 眼闭静息，真实 1/f 与 α 峰</li>
+        <li>0.5 Hz 高通 + 逐通道归一化</li>
+        <li>160 → 250 Hz 重采样，取 40 s</li>
+        <li>仅背景真实；伪迹与 ERP 仍为注入</li>
+      </ul>
+    </div>
+  </div>
+  <div class="truthline">
+    <span>真实 EDF</span><b class="arrow">→</b>
+    <span>0.5 Hz 高通</span><b class="arrow">→</b>
+    <span>逐通道归一化</span><b class="arrow">→</b>
+    <span>160→250 Hz</span><b class="arrow">→</b>
+    <span>注入伪迹 / ERP</span><b class="arrow">→</b>
+    <span style="border-color:rgba(56,189,248,.5);color:#e6edf7">构造真值</span>
+  </div>
+  <div class="foot">真实背景解决的是「背景像不像真 EEG」；它不代表真实伪迹、真实 ERP 或真实被试上的排名。</div>
+</section>
+
+<!-- 04 使用路径 -->
+<section class="fig" id="fig4">
+  <div class="kicker">DenoiseLab · 04 使用路径</div>
+  <h2>五步之内，从困惑到可复现的方案</h2>
+  <p class="sub">评委照着这五步，就能在同一页把结论跑出来。</p>
+  <div class="flow">
+    <div class="step"><div class="no">STEP 1</div><div class="t">选数据源</div><div class="d">合成 EEG / 真实背景</div></div>
+    <div class="step"><div class="no">STEP 2</div><div class="t">选伪迹与 SNR</div><div class="d">眼电 / 肌电 / 工频 / 漂移</div></div>
+    <div class="step"><div class="no">STEP 3</div><div class="t">五种方法同台</div><div class="d">勾选要对比的方法</div></div>
+    <div class="step"><div class="no">STEP 4</div><div class="t">看四个面</div><div class="d">波形 / 频谱 / ERP / 指标</div></div>
+    <div class="step"><div class="no">STEP 5</div><div class="t">拿方案</div><div class="d">推荐 + 脚本 + 报告</div></div>
+  </div>
+  <div class="out">
+    <div>MNE 处理脚本</div>
+    <div>Methods 段落草稿</div>
+    <div>当前对比报告</div>
+  </div>
+  <div class="foot">无注册、无上传、无在线推理。网页只读取离线 JSON；所有曲线与指标由 Python 预计算。</div>
+</section>
+
+<!-- 05 指标 -->
+<section class="fig" id="fig5">
+  <div class="kicker">DenoiseLab · 05 指标体系</div>
+  <h2>不是给一个总分，而是把代价摊开</h2>
+  <p class="sub">七个指标分成三组：伪迹去了多少、信号留住了多少、下游还能不能用。</p>
+  <div class="groups">
+    <div class="group">
+      <h3>伪迹去了多少</h3>
+      <div class="metric"><span>SNR 提升</span><span class="goal">↑</span></div>
+      <div class="metric"><span>RRMSE</span><span class="goal">↓</span></div>
+    </div>
+    <div class="group">
+      <h3>信号留住了多少</h3>
+      <div class="metric"><span>波形相关</span><span class="goal">→ 1</span></div>
+      <div class="metric"><span>α 功率保留</span><span class="goal">→ 1</span></div>
+      <div class="metric"><span>β 功率保留</span><span class="goal">→ 1</span></div>
+    </div>
+    <div class="group">
+      <h3>下游还能不能用</h3>
+      <div class="metric"><span>ERP 峰值比</span><span class="goal">→ 1</span></div>
+      <div class="metric"><span>N400 潜伏期偏移</span><span class="goal">→ 0 ms</span></div>
+    </div>
+  </div>
+  <div class="weight">
+    <b>综合分</b> = 波形相关 25% + N400 峰值 25% + 潜伏期 15% + SNR 15% + α/β 各 10%<br>
+    权重可以换；页面始终把七个原始指标全部列出，不用一个分数替你下结论。
+  </div>
+  <div class="foot">ERP 峰值比 &lt; 70% 会触发「ERP / 语义实验慎用」警告；波形相关 &lt; 0.8 会提示伪迹仍有残留。</div>
+</section>
+
+<!-- 06 Qoder 过程 -->
+<section class="fig" id="fig6">
+  <div class="kicker">DenoiseLab · 06 构建过程</div>
+  <h2>哪些交给 Qoder，我改了什么</h2>
+  <p class="sub">Qoder 负责把想法变成可运行的系统；算法取舍、评分权重和可信度边界由我判断。</p>
+  <div class="rows">
+    <div class="row"><div class="n">01</div><div class="stage">需求拆解</div><div class="body">
+      <div><span class="q">Qoder</span>：拆成「基准生成器 + 静态对比页 + 推荐与导出」三块</div>
+      <div><span class="me">我</span>：只做 5 种经典方法，不堆深度模型；把 ERP 保真定为核心指标</div>
+    </div></div>
+    <div class="row"><div class="n">02</div><div class="stage">基准生成</div><div class="body">
+      <div><span class="q">Qoder</span>：写 16 导 / 250 Hz / 40 s 数据与四类伪迹三档 SNR，实现五种方法</div>
+      <div><span class="me">我</span>：发现随机种子用了 Python hash() 不可复现，改成 zlib.crc32；删掉重复叠加的 ERP</div>
+    </div></div>
+    <div class="row"><div class="n">03</div><div class="stage">前端</div><div class="body">
+      <div><span class="q">Qoder</span>：单页 HTML/CSS/JS，Canvas 画波形、频谱、ERP，做指标表和结论卡</div>
+      <div><span class="me">我</span>：定评分权重与警告阈值；补隐藏按钮的样式冲突</div>
+    </div></div>
+    <div class="row"><div class="n">04</div><div class="stage">真实数据</div><div class="body">
+      <div><span class="q">Qoder</span>：下载并解析 PhysioNet EDF，重采样、高通、归一化</div>
+      <div><span class="me">我</span>：选 S001R02 眼闭静息，确认 16 通道齐全并做 T7/T8→T3/T4 映射</div>
+    </div></div>
+    <div class="row"><div class="n">05</div><div class="stage">修复迭代</div><div class="body">
+      <div><span class="q">Qoder</span>：一起定位切换伪迹时图表变形、坐标轴文字重叠</div>
+      <div><span class="me">我</span>：确认根因是 canvas height 被自身覆盖、按 DPR 膨胀；改固定高度后逐一验证 24 个组合</div>
+    </div></div>
+    <div class="row"><div class="n">06</div><div class="stage">部署上线</div><div class="body">
+      <div><span class="q">Qoder</span>：用 Qoder Sites 打包、发布、生成公开地址</div>
+      <div><span class="me">我</span>：本地先验全部场景，线上复验数据加载、图表与导出</div>
+    </div></div>
+  </div>
+</section>
+
+<!-- 07 边界 -->
+<section class="fig" id="fig7">
+  <div class="kicker">DenoiseLab · 07 边界</div>
+  <h2>这份结论能用到哪</h2>
+  <p class="sub">把「能说明」和「不能说明」写清楚，比多给一个排名更有用。</p>
+  <div class="bound">
+    <div class="col can">
+      <h3>能说明</h3>
+      <p>方法特性与代价组合；同一数据下谁更保真；不同伪迹、不同 SNR 下的相对趋势。</p>
+    </div>
+    <div class="col cannot">
+      <h3>不能说明</h3>
+      <p>真实被试上的排名；真实伪迹的分布；去噪之后语义解码一定涨点。</p>
+    </div>
+    <div class="col how">
+      <h3>怎么用</h3>
+      <p>导出 MNE 脚本 → 在你的数据上复跑 → 先看 ERP 与下游任务，再决定是否采用。</p>
+    </div>
+  </div>
+  <div class="foot">两套数据的伪迹与 ERP 都是注入的，真值是构造的；ASR 为简化实现；深度去噪（如 GCTNet）未纳入本基准。</div>
+</section>
+
+</body>
+</html>
